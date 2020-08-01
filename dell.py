@@ -1,82 +1,46 @@
-import asyncio
-from random import randint
+import pickle
+from datetime import datetime
 
 
-class Rocket:
-    def __init__(self):
-        self.delay = randint(0, 3)
-        self.countdown = randint(1, 5)
 
-    def launch_rocket(self):
-        time.sleep(self.delay)
-        for i in reversed(range(self.countdown)):
-            print(f"{i + 1}...")
-            time.sleep(1)
-        print("Rocket launched!")
-
-    @staticmethod
-    async def async_launch_rocket(q: asyncio.Queue):
-        rocket = await q.get()
-        await asyncio.sleep(rocket.delay)
-        for i in reversed(range(rocket.countdown)):
-            print(f"{i + 1}...")
-            await asyncio.sleep(1)
-        print("Rocket launched!")
-        q.task_done()
+simple = dict(int_list=[1, 2, 3],
+             text='string',
+             number=3.44,
+             boolean=True,
+             none=None)
 
 
-class Spaceport:
-    def __init__(self, number_of_launch_sites=10):
-        self.number_of_launch_sites = number_of_launch_sites
+class A(object):
 
-    async def _async_launch(self, rockets):
-        rocket_queue = asyncio.Queue()
-        for rocket in rockets:
-            rocket_queue.put_nowait(rocket)
+    def __init__(self, simple):
+        self.simple = simple
 
-        tasks = []
-        for i in range(self.number_of_launch_sites):
-            task = asyncio.create_task(Rocket.async_launch_rocket(rocket_queue))
-            tasks.append(task)
+    def __eq__(self, other):
+        if not hasattr(other, 'simple'):
+            return False
 
-        await rocket_queue.join()
-        for task in tasks:
-            task.cancel()
+        return self.simple == other.simple
 
-        await asyncio.gather(*tasks, return_exceptions=True)
+    def __ne__(self, other):
+        if not hasattr(other, 'simple'):
+            return True
 
-    async def launch_rockets(self, q: asyncio.Queue):
-        while True:
-            rockets = await q.get()
-            await self._async_launch(rockets)
-            q.task_done()
-
-    async def first_launch_rockets_with_lower_delay(self, q: asyncio.Queue):
-        while True:
-            rockets = await q.get()
-            rockets.sort(key=lambda rocket: rocket.delay)
-            await self._async_launch(rockets)
-            q.task_done()
+        return self.simple != other.simple
 
 
-async def rocket_supplier(q: asyncio.Queue):
-    while True:
-        rockets_count = 10
-        rockets = [Rocket() for _ in range(rockets_count)]
-        await q.put(rockets)
-        await asyncio.sleep(20)
+complex = dict(a=A(simple), when=datetime(2016, 3, 7))
 
 
-async def main():
-    sp = Spaceport()
-    q = asyncio.Queue(maxsize=1)
-    producers = [asyncio.create_task(rocket_supplier(q))]
-    consumers = [asyncio.create_task(sp.launch_rockets(q))]
-    await asyncio.gather(*producers)
-    await q.join()
-    for c in consumers:
-        c.cancel()
+pickle.dumps(simple)
 
+pickle.dumps(simple, protocol=pickle.HIGHEST_PROTOCOL)
 
-if __name__ == '__main__':
-    asyncio.run(main())
+x = pickle.loads(
+    b"(dp1\nS'text'\np2\nS'string'\np3\nsS'none'\np4\nNsS'boolean'\np5\nI01\nsS'number'\np6\nF3.4399999999999999\nsS'int_list'\np7\n(lp8\nI1\naI2\naI3\nas.")
+
+assert x == simple
+
+x = pickle.loads(
+    b'\x80\x02}q\x01(U\x04textq\x02U\x06stringq\x03U\x04noneq\x04NU\x07boolean\x88U\x06numberq\x05G@\x0b\x85\x1e\xb8Q\xeb\x85U\x08int_list]q\x06(K\x01K\x02K\x03eu.')
+
+assert x == simple

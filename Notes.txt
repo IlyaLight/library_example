@@ -1,0 +1,64 @@
+> pip <pip arguments>
+
+> pip install SomePackage            # latest version
+> pip install SomePackage==1.0.4     # specific version
+> pip install 'SomePackage>=1.0.4'     # minimum version
+
+
+> pip <pip arguments>
+
+> pip install SomePackage            # latest version
+> pip install SomePackage==1.0.4     # specific version
+> pip install 'SomePackage>=1.0.4'     # minimum version
+
+
+python -m venv venv
+venv\Scripts\activate.ba
+
+-------------------------------------
+
+
+repository.py
+
+book_list: List[Book] = []
+book_description_list: List[BookDescription] = []
+reader_list: List[Reader] = []
+
+-------------------------------------
+
+models.py
+
+class Book:
+    def __init__(self, description_id: int, _id: int):
+        self.id = _id
+        self.description_id = description_id
+
+class BookDescription:
+    pass
+
+class Reader:
+    pass
+
+-------------------------------------
+
+controller.py
+
+def add_book(description_id: int = None, name: str = None, autors: str = None, annotatio: str = None) -> Book:
+    if description_id:
+        servise.create_book(description_id)
+    elif name:
+        servise.create_book(servise.create_book_description(name, autors, annotatio).id)
+    else:
+        raise TimeoutError("wrong args")
+
+-------------------------------------
+
+servise.py
+
+def create_book(description_id: int) -> Book:
+    book = Book(description_id, uuid.uuid1().int)
+    return book
+
+
+def create_book_description(name: str, autors: List[str], annotatio: str) -> BookDescription:
+    return BookDescription(name, autors, annotatio)
