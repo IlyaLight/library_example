@@ -5,11 +5,17 @@
 > pip install 'SomePackage>=1.0.4'     # minimum version
 
 
-> pip <pip arguments>
+pip uninstall <package>			удалить пакет
+> pip install --upgrade <package>	обновить пакет
 
-> pip install SomePackage            # latest version
-> pip install SomePackage==1.0.4     # specific version
-> pip install 'SomePackage>=1.0.4'     # minimum version
+> pip search		 поиск пакетов
+
+> pip list		 список установленных пакетов
+> pip freeze 	 список установленных пакетов в requirements формате
+
+> pip freeze -r <file>		сохранение в файл
+> pip install -r <file>	установка пакетов перечисленных в файле
+
 
 
 python -m venv venv
